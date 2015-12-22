@@ -1,990 +1,227 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
 
-	<meta charset="utf-8" />
-	<meta name="format-detection" content="telephone=no" />
-	<meta name="msapplication-tap-highlight" content="no" />
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
 
-	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
-	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
-	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+//Global variables			
+var holes = 10;
+var field = '#hole';
+
+$(document).ready(function(){
+
+	//Check if local storage is enabled on this browser and display relevant div
+	if (Modernizr.localstorage) { 
+			//Show main div - the one with the scorecard on it
+			$('#storage').show();
+			//Add event handlers to buttons
+			$("#update").click(function(event) {
+				event.preventDefault();
+				updateScorecard();
+			});
+			$("#reset").click(function(event) {
+				event.preventDefault();
+				resetScorecard();
+			});
+			//Check to see if data exists
+			if (localStorage.getItem("XarkosCrazyGolfScorecard") === null) {
+				$('#status').html('New Game');
+				$('#reset').hide();
+			} else {
+				$('#status').html('Game In Play');
+				refreshScoreCard();
+			}
+			
+      } else { 
+			console.log("Local Storage is not available."); 
+			$('#message').show();
+      } 
+	
+});
+
+function updateScorecard() {
+		
+		//Get data from card and convert to JSON
+			var score = 0;
+			
+			var memorystring = "{";
+			for (i = 0; i < holes; i++) {
+				fieldtoget = field + (i + 1);
+				score=parseInt(score) + parseInt($(fieldtoget).val());
+				memorystring = memorystring + '"' + fieldtoget.slice(1) + '":' + parseInt($(fieldtoget).val()) + ', ';
+			}
+			//Format end of JSON string
+			memorystring = memorystring.slice(0, memorystring.length-2) + "}";
+			//memorystring = JSON.stringify(memorystring);
+			//If not there insert - else - Update - luckily it updates automatically! -whoopee...
+			localStorage.setItem("XarkosCrazyGolfScorecard", memorystring);
+			//Update score on bottom of the card
+			$('#total').html(score);
+			//Show reset button
+			$('#reset').show();
+			//Rest status banner
+			$('#status').html('Game In Play');
+			
+			
+}
+
+function refreshScoreCard () {
+
+			var score = 0;
+			console.log('refreshing scorecard');
+			var retreiveddata = JSON.parse(localStorage.getItem("XarkosCrazyGolfScorecard"));
+			for (var key in retreiveddata) {
+				if (retreiveddata.hasOwnProperty(key)) {
+					$('#' + key).val(retreiveddata[key]);
+					score = score + parseInt(retreiveddata[key]);
+				}
+			}
+			//Update score on bottom of the card
+			$('#total').html(score);
+			
+}
+
+function resetScorecard() {
+
+			var r = confirm("RESET SCORECARD \n\nDo you wish to reset the scorecard? \n\n\If you selecy [ OK ] your game record will be deleted!");
+			if (r == true) {
+				localStorage.removeItem("XarkosCrazyGolfScorecard");
+				//Reset value in each field to 0
+				for (i = 0; i < holes; i++) {
+					$(field + (i+1)).val(0);
+				}
+				//Update score on bottom of the card
+				$('#total').html(0);
+				//Hide reset button
+				$('#reset').hide();
+				//Rest status banner
+				$('#status').html('New Game');
+			}	
+}
+
+</script>
 
 <style>
-
-	.center-button {
-	  margin: 0 auto;
-	  text-align:center;
+	body {
+	margin:0px;
+	font-family: Arial;
+	}
+	#message, #storage {
+	display:none;
+	}
+	h2, h3 {
+	text-align:center;
+	}
+	table {
+	width:33%;
+	border-collapse:collapse;
+	margin-left:auto;
+	margin-right:auto;
+	}
+	input {
+	width:100%;
+	}
+	input.number {
+	width:35px;
+	text-align:center;
+	}
+	th, .score {
+	font-size:14pt;
+	font-weight:bold;
+	text-align:center;
+	background-color:lightgreen;
+	}
+	tr {
+	text-align:center;
+	}
+	td {
+	width:33%;
 	}
 
-	h2, .copyright {
-		text-align:center;
-	}
-	p {
-		text-align:justify;
-	}
-	
 	
 </style>
-
 </head>
-
 <body>
+<div id="message"><h2>Sorry (according to Modernizr) Local Storage is not supported by this browser.</h2></div>
+<h2>Scorecard</h2>
+<h3><div id="status"></div></h3>
+<div id="storage">
 
-<body>
-
-<!-- Start of Table of Contents page: #toc -->
-<div data-role="page" id="toc">
-
-	<div data-role="header">
-		<h1>Family Pet First Aid</h1>
-	</div><!-- /header -->
-
-	<div role="main" class="ui-content">
-
-		<h2>Table of Contents</h2>
-
-		<fieldset data-role="controlgroup">
-			<a href="#one"   class="ui-btn ui-corner-all">1) Family Pet First Aid</a>
-			<a href="#two"   class="ui-btn ui-corner-all">2) Prevention</a>
-			<a href="#three" class="ui-btn ui-corner-all">3) Preparation</a>
-			<a href="#four"   class="ui-btn ui-corner-all">4) Pet 911</a>
-			<a href="#five"   class="ui-btn ui-corner-all">5) Species Specific Information</a>
-			<a href="#six" class="ui-btn ui-corner-all">6) A Pet First Aid Kit</a>
-			<a href="#seven"   class="ui-btn ui-corner-all">7) Your Pet's Medical Record</a>
-			<a href="#eight" class="ui-btn ui-corner-all">Afterword</a>
-		</fieldset>
-		
-		<img src="petsheaderone.jpg" class="img-responsive center-block">
-		
-	</div><!-- /content -->
-
-	<div data-role="footer" data-theme="a">
-		<h4><a href="#popup" class="ui-btn ui-shadow ui-corner-all center-button" data-rel="dialog" data-transition="pop">Disclaimer</a></h4>
-		<p class="copyright">&copy Xarkos Publishing 2015</p>
-	</div><!-- /footer -->
+<table border="1">
+	<tr>
+		<th>HOLE</th>
+		<th>SCORE</th>
+	</tr>
 	
-</div><!-- /page one -->
-
-<!-- Start of first chapter: #one -->
-<div data-role="page" id="one" data-theme="a">
-
-	<div data-role="header">
-		<h1>Family Pet First Aid</h1>
-	</div><!-- /header -->
+	<tr>
+		<td>1</td>
+		<td><input id="hole1" class="number" type="number" value=0 min=0></td>
+	</tr>
 	
+	<tr>
+		<td>2</td>
+		<td><input id="hole2" class="number" type="number" value=0 min=0></td>
+	</tr>
+	
+	<tr>
+		<td>3</td>
+		<td><input id="hole3" class="number" type="number" value=0 min=0></td>
+	</tr>
+	
+	<tr>
+		<td>4</td>
+		<td><input id="hole4" class="number" type="number" value=0 min=0></td>
+	</tr>
+	
+	<tr>
+		<td>5</td>
+		<td><input id="hole5" class="number" type="number" value=0 min=0></td>
+	</tr>
+	
+	<tr>
+		<td>6</td>
+		<td><input id="hole6" class="number" type="number" value=0 min=0></td>
+	</tr>
+	
+	<tr>
+		<td>7</td>
+		<td><input id="hole7" class="number" type="number" value=0 min=0></td>
+	</tr>
+	
+	<tr>
+		<td>8</td>
+		<td><input id="hole8" class="number" type="number" value=0 min=0></td>
+	</tr>
+	
+	<tr>
+		<td>9</td>
+		<td><input id="hole9" class="number" type="number" value=0 min=0></td>
+	</tr>
+	
+	<tr>
+		<td>10</td>
+		<td><input id="hole10" class="number" type="number" value=0 min=0></td>
+	</tr>
+	
+	<tr class="score">
+		<td>TOTAL</td>
+		<td><div id="total">0</div></td>
+	</tr>
+	
+	<tr>
+		<td><button id="reset">Clear Card</button></td>
+		<td><button id="update">Update</button></td>
+	</tr>
 	
 
-	<div role="main" class="ui-content">
-	
-		<div class="ui-grid-b">
-			<div class="ui-block-a"><button data-theme="a" onClick="window.location='#toc';">Previous</button></div>
-			<div class="ui-block-b"><button data-theme="a" onClick="window.location='#toc';">Contents</button></div>
-			<div class="ui-block-c"><button data-theme="a" onClick="window.location='#two';">Next</button></div>
-		</div>
-	
-		<h2>1) Family Pet First Aid</h2>
-	
-		<p>I want to start, rather strangely, by saying just what Pet First Aid is not. Pet First Aid is <b>not</b> a substitute for competent, 
-		professional and rapidly delivered attention by a qualified and trained professional Veterinarian. First aid is <b>not</b> a substitute 
-		or treatment for an animal which has been kept in unhealthy or unsanitary conditions with poor regard for proper dietary, exercise or other needs. 
-		 All pets deserve to be kept in a clean and safe home with adequate food, warmth and shelter.</p>
-		 
-		<p>First aid is just that, the <b>first</b> part of the process to stabilize, assist, and prepare an injured or sick animal for transport, 
-		attention and further treatment by a fully trained professional Veterinarian should an accident or emergency occur which causes your animal harm.</p>
+</table>	
 
-		<p>Remember this process all starts with you, which makes your assistance the vital first link in the chain that could save your pet's life. 
-		It is you who is responsible for Pet First Aid (the first part) and a  professional Veterinarian is responsible for further aftercare (the second part).</p>
+<div id="objectdata"></div>
 
-		<p>Armed with vigilance and the knowledge in this document, preparation, a plan and a cool head you can make the first vital lifesaving steps in the care, 
-		cure and recovery of an injured pet. should the worst happen.</p>
+</div>
 
-		<p>This is a great responsibility but one you owe to your pet to carry.</p>
-
-		<p>The Four aims of Pet First Aid are...</p>
-
-		<ul>
-		<li>To stabilize the condition of any injury your pet may have sustained ahead of professional care.</li>
-		<li>To provide comfort and reassurance to your animal</li>
-		<li>To prepare your animal for transport to a Veterinarian</li>
-		<li>To record an preserve all  the information, data and circumstances than may assist a Veterinarian to provide further diagnosis and treatment</li>
-		</ul>
-
-		<p>With the benefit of hindsight a lot of accidents could easily have been avoided which is why it is 
-		important to think  ahead - which brings us to our next topic.</p>
-	
-		<div class="ui-grid-b">
-			<div class="ui-block-a"><button data-theme="a" onClick="window.location='#toc';">Previous</button></div>
-			<div class="ui-block-b"><button data-theme="a" onClick="window.location='#toc';">Contents</button></div>
-			<div class="ui-block-c"><button data-theme="a" onClick="window.location='#two';">Next</button></div>
-		</div>
-	
-	</div><!-- /content -->
-
-	<div data-role="footer" data-theme="a">
-		<h4><a href="#popup" class="ui-btn ui-shadow ui-corner-all center-button" data-rel="dialog" data-transition="pop">Disclaimer</a></h4>
-		<p class="copyright">&copy Xarkos Publishing 2015</p>
-	</div><!-- /footer -->
-	
-</div><!-- /end of chapter one -->
-
-<!-- Start of first chapter: #two -->
-<div data-role="page" id="two" data-theme="a">
-
-	<div data-role="header">
-		<h1>Family Pet First Aid</h1>
-	</div><!-- /header -->
-
-	<div role="main" class="ui-content">
-	
-	<div class="ui-grid-b">
-		<div class="ui-block-a"><button data-theme="a" onClick="window.location='#one';">Previous</button></div>
-		<div class="ui-block-b"><button data-theme="a" onClick="window.location='#toc';">Contents</button></div>
-		<div class="ui-block-c"><button data-theme="a" onClick="window.location='#three';">Next</button></div>
-	</div>
-	
-	<h2>2) Prevention</h2>
-	
-	<h3>Bob's Story</h3>
-
-	<p align="center"><b><i>"Every day I take Spark my three year old Doberman for a walk in our local park, part of the walk is along a busy road where I keep 
-	him firmly on a leash. Checking his leash the other day I noticed a hairline crack in the clip holding the lead to his collar ring. 
-	There was a possibility that this could have failed whilst he was near traffic and possible bolted into the road. 
-	Luckily I was able to replace the leash before anything happened - and I'm confident I can get Spark safely to the park where I can let him run loose."</i></b></p>
-
-	<p align="center"><b>Lesson -  Prevention is better then cure!</b></p>
-
-	<p>It is often said that an ounce of prevention is worth a pound of cure, and rightly so, in many cases accidents or emergencies have a 
-	human cause due to our basic human nature , foibles, misjudgements, omissions, slips and accidents occur.</p>
-
-	<p>That's a fact of life. Think how you would feel if, god forbid, an accident or even worse happened to your 
-	pet because you failed to lock a door, close a cupboard or put away a dangerous piece of equipment. Worse than that what about your pet? 
-	Don't you owe them a duty of care to provide a loving and safe environment, one free of hazards and dangers?</p>
-
-	<p>What may seem like a safe domestic environment to us could be a danger zone to the average pet unable to read or understand the dangers of 
-	electricity, heat and poisoning. So take some time to think about the hazards that your pet may be surrounded by</p><p>
-	The following is not an exhaustive list but one provided as a start.</p>
-
-	<ul>
-	<li>External access</li>
-	<li>Cars, Roads</li>
-	<li>Other Animals</li>
-	<li>Burns</li>
-	<li>Poisons</li> 
-	<li>Electrocution</li>
-	<li>Theft</li>
-	<li>Fireworks</li>
-	</ul>
-
-	<p>Think through each item on this list and consider if your pet could be at risk in any way, think how you could reduce or remove the danger in each case, 
-	then take action.</p>
-
-	<p>It is vitally important never to leave your pet unattended inside a car on a hot day - even for a few moments. 
-	the sun a locked car is a green house, oxygen is used up rapidly and a pet could suffocate. Consider leaving the window open a few inches, 
-	look around the internet for a safety grill which locks in place and would prevent your animal escaping.</p>
-
-	<h3>Pet Proof Your Home</h3>
-
-	<p>Take some time to lower yourself nearer the ground and try and look around your pets habitat and try and see the world as they see it. 
-	Are there any hazards or dangers they could fall foul off? Do you have fire guards? Are there any ways in which you pet could escape through 
-	a door, window or other opening?</p>
-
-	<p>If your pet is a caged animal take time to examine their home for sharp edges, loose doorways or other ways they could get out. 
-	Also check if there is any possibility that another, larger more predatory animal could get in.</p>
-
-	<p>If your pet travels with you are you sure it is kept securely whilst traveling?</p>
-
-	<p>If you walk your pet on a lead are you sure that the collar and 
-	lead are strong enough and that there is no possibility of snapping and your pet getting loose whilst near a busy road, do you hold the lead tightly 
-	enough looping your wrist through the strap? </p>
-
-	<p>Check around the home for the presence of possible poisons, hot surface, exposed electrical connections etc. 
-	The modern home can be a hostile place especially to a small animal with an inquisitive nature and a drive to explore.</p>
-
-	<p>Understand how your dog will behave around other dogs, should they be avoided whilst out walking?</p>
-
-	<h3>Collars</h3>
-
-	<p>It is important to choose a good quality collar for your cat and dog. Check which collars are available for your pet and consider the following points...</p><p>
-	<b>Visibility</b> - a high visibility collar will aid drivers to see your cat or dog well in advance.</p><p>
-	<b>Slip ability</b> - Cats especially like to climb and explore trees, shed and outbuildings. Consider the possibility that a collared cat might get there 
-	collar snagged whilst climbing. An elasticated collar would allow them to struggle free should their collar become snagged.</p><p>
-	<b>Identity</b> - A collar carrying an identity tag can help a lost pet find its owner. If  you allow your pet to wander free then the wearing of a collar 
-	is clear sign that they are not a stray and have an owner.</p>
-
-	<h3>Chipping</h3>
-
-	<p>A chip or implant is a small passive electronic device about the size of a grain of rice, which can be implanted under the skin of your pet. 
-	On it's  own a chip is inert and harmless it does not have a power supply, is non-toxic and non radioactive, it will not cause any discomfort, 
-	your pet will now know it is there and it will be virtually impossible to find by physical examination. A chip uses RDIF technology to respond to a detector.  
-	This is a device that when placed near a chip can read a unique serial number programmed into the chip. The unique serial number for each chip is recorded 
-	In a nationally controlled database by Veterinarians, animal rescue charities or public law enforcement bodies which can then be traced back to you; it's owner. 
-	In this way a unique database exists to resolve question of pet ownership.</p>
-
-	<p>There are many benefits of chipping including...</p>
-
-	<ul>
-	<li>Resolving disputes over ownership of a pet</li>
-	<li>Uniquely identifying an animal in the absence of its owner with the ability to link to its veterinary record</li>
-	<li>Proof of owner ship - a chipped animal is unlikely to be a stray</li>
-	</ul>
-
-	<p>Ask your Veterinarian about chipping your pet.</p>
-
-	<h3>How To Handle an Injured Pet</h3>
-
-	<p>Never assume that the gentlest most trusted pet will not lash out, scratch or bite indiscriminately if it is in pain. 
-	Even the most trusted and loving animal can act completely out of character if it is suffering or in distress. Please understand that, this in nothing personal - 
-	your animal still loves you - it is just acting out of an instinct for self preservation.  You should take precautions by covering your bare arms and also wear woolen gloves to prevent yourself from the possibility of being scratched or bitten.</p>
-
-	<p>Keep contact to a minimum, do not try to hug an injured pet,  any attempt to cuddle or stroke your pet may be interpreted and a sign of danger and your 
-	animal may respond accordingly. This may be your first impulse to comfort your animal but it could only frighten them and cause them more distress.</p>
-
-	<p>Keep your face away from you pets mouth, do not try to kiss your pet, there is always a strong possibility of contamination and cross infection occurring.</p>
-
-	<p>Examine your pet from injuries in a slow, calm, unhurried and methodical manner. Stop if this is causing you pet undue pain or distress.</p>
-
-	<p>If necessary and if your pet is not vomiting, you may muzzle your animal to prevent  yourself or other being bitten. Cats and other small animals can be wrapped 
-	in a towel or blanket. Make sure that the towel is not to tight, that there head is exposed and that they are not constricted as to make breathing difficult. 
-	Larger animals such as a dog may have a ready made muzzle available if not improvise with a towel , bandage or rolled gauze.</p>
-
-	<p>If you suspect a fracture then use a splint and bandage to stabilize a broken limb. Avoid putting pressure on any injured area or attempting to make your pet walk</p>
-
-	<h3>How to Transport an Injured Pet</h3>
-
-	<p>It is always best to use a ready made pet cage to transport your pet to your Veterinarian after applying first aid. A large variety of pet cages and transporters are 
-	readily available from any good pet shop, These will provide a degree of security as an agitated and upset animal may try and escape whilst in transit.</p>
-
-	<p>In the absence of a proper pet cage, you will have to improvise, cardboard boxes can be OK but are often not sturdy enough to take the weight of a full grown dog. 
-	Put a blanket in as a urine absorber - a frightened animal may become. Incontinent.</p>
-
-	<div class="ui-grid-b">
-		<div class="ui-block-a"><button data-theme="a" onClick="window.location='#one';">Previous</button></div>
-		<div class="ui-block-b"><button data-theme="a" onClick="window.location='#toc';">Contents</button></div>
-		<div class="ui-block-c"><button data-theme="a" onClick="window.location='#three';">Next</button></div>
-	</div>
-	
-	</div><!-- /content -->
-
-	<div data-role="footer" data-theme="a">
-		<h4><a href="#popup" class="ui-btn ui-shadow ui-corner-all center-button" data-rel="dialog" data-transition="pop">Disclaimer</a></h4>
-		<p class="copyright">&copy Xarkos Publishing 2015</p>
-	</div><!-- /footer -->
-	
-</div><!-- /end of chapter two -->
-
-<!-- Start of first chapter: #three -->
-<div data-role="page" id="three" data-theme="a">
-
-	<div data-role="header">
-		<h1>Family Pet First Aid</h1>
-	</div><!-- /header -->
-
-	<div role="main" class="ui-content">
-	
-	<div class="ui-grid-b">
-		<div class="ui-block-a"><button data-theme="a" onClick="window.location='#two';">Previous</button></div>
-		<div class="ui-block-b"><button data-theme="a" onClick="window.location='#toc';">Contents</button></div>
-		<div class="ui-block-c"><button data-theme="a" onClick="window.location='#four';">Next</button></div>
-	</div>
-		
-	<h2>3) Preparation</h2>
-	
-	<h3>Debbie's Story</h3>
-
-		<p align="center"><b><i>"Kitsy my thirteen year old Persian Queen came in limping the other day it was obvious that she couldn’t take any weight on one of her front paws. 
-		I picked her up gently and saw she had a long bramble thorn embedded in her pad. As I'd prepared a Pet First Aid kit I had a pair of tweezers to hand I was able 
-		to remove it straight away and smear some antiseptic cream on the area. Had she had it embedded in her any longer it could have gone septic and caused 
-		further injury or poisoning."</i></b></p>
-
-		<p align="center"><b>Lesson - Be Prepared!</b></p>
-
-		<p>As with Prevention an ounce of preparation will pay dividends in the case of the unfortunate happening, consider acquiring the following.</p>
-
-		<h3>Pet First Aid Kit</h3>
-
-		<p>One thing you can keep to hand in case of an emergency is a set of medical supplies or a First Aid Kit for your pet. 
-		Keep these in a clearly labelled box and make sure it is fully stocked at all times and you know where to get your hands on it quickly should the worst happen.</p><p>
-		So what kind of things do we need to put in a Pet Fist Aid Kit? Well you can either buy a Pet First Aid kit fully stocked from either eBay, 
-		Amazon or your local Pet Shop or you can stock a Pet First Aid Kit yourself. Some of the items are easily available and the human equivalent of items such as sterile 
-		bandages or gauze will do fine for your animal. Other items are more specialist - for example a Protective or Elizabethan Pet Collar - and will require some research 
-		to find a supplier - as always the internet will most often be the place to start.</p>
-
-		<h3>Information To Hand</h3>
-
-		<p>It is always wise to keep certain  information relating to your pets medical history to hand. In human health care a medical record of treatments, 
-		diseases and conditions is kept over  persons lifetime, this acts a great help to medical professionals in order to see the whole picture. 
-		Sadly in the animal domain such a system is either non existent or patchy at best. If you have a regular Veterinarian they may have a record of 
-		any treatment they have administered to your pet, but what if you move, relocate or change veterinary practices?</p>
-
-		<h3>Pet Insurance</h3>
-
-		<p>When an animal is injured and requires emergency medical treatment one worry may be be in the mind, that of the cost of treatment, god forbid that any though 
-		of the potential costs involved in obtaining emergency veterinary treatment should delay or prevent an injured animals owner seeking their assistance. 
-		Sadly however in the real world Veterinariana ans their costs of their professional practices can be high, they need to be to maintain a high standard of facilities in their practice and this costs money, expenses! expenses!</p>
-
-		<p>The answer to these worries is Pet Insurance, by planning a head provision can be made to make sure that, if the worst happens, financial 
-		help will also be available and your animal will be able to receive the best veterinary treatment without regard to how much money you have at that time.</p>
-
-		<p>A small monthly premium buys great peace of mind</p>
-
-		<p>The Internet is a great place to start researching pet insurance and  you should ask yourself...</P>
-
-		<ul>
-		<li>What are the monthly premium? What level of cover will I receive?</li>
-		<li>Will  they insist on prior vaccination/chipping or collaring?</li
-		<li>Are pre-existing conditions covered?</li
-		<li>Will they require me to use a nominated Emergency VeteVeterinarian instead of my own?</li>
-		<li>Is my pet covered away from home or whilst in transit?</li>
-		</ul>
-
-		<p>Whichever company you use to insure your pet with keep their contact details and emergency response numbers readily available.</p>
-
-		<h3>Evidence Gathering and Sample Collection</h3>
-
-		<p>Although it is easier said than done it is vital to keep a cool head and remain calm and in control should your pet have an accident, 
-		for one thing this sense of calmness will be communicated to the animal, if you panic then this  may increase the worry and distress of an already troubled creature.</p>
-
-		<p>Should the worst happen then you need to think methodically about and think ahead to be able to answer any questions that arise . 
-		You should have on hand the means to record accurate and objective information regarding any incident.</p>
-
-		<p>For example you may want to record the following facts about any incident...</p>
-
-		<ul>
-		<li>Description of the incident</li>
-		<li>When did it happen?</li>
-		<li>Was the animal alone/attended when the incident happened?</li>
-		<li>Did you notice anything unusual before the incident - has there been a change in your pets behaviour?</li>
-		</ul>
-
-		<p>You may also need this information for insurance purposes.</p>
-
-		<p>Also, in the case of poisoning or other types of accident. Your Veterinarian may find it useful to examine a sample of...</P>
-
-		<ul>
-		<li>Vomit, anything your pet has sicked up</li>
-		<li>Faeces of Urine may contain clues about contaminants</li>
-		<li>Poisonous substances (plants, berries etc.) your pet may have been in contact with</li>
-		</ul>
-
-		<p>Handling samples of these material may be unpleasant and dangerous so you will need to obtain.</p>
-
-		<ul>
-		<li>Notepad and pen</li>
-		<li>Rubber glove sand face mask</li>
-		<li>Clear plastic storage containers</li>
-		</ul>
-
-		<h3>Your Pet's Medical Record</h3>
-
-		<p>It is a good idea to keep an independent records of basic data about your pet and details of any longstanding conditions, accidents,  
-		allergies, treatments and medications etc. that have been
-		given. This information can be split into two parts - basic data and medical information. </p>
-
-		<p>Chapter Six gives further advice on this.</p>
-
-		<div class="ui-grid-b">
-			<div class="ui-block-a"><button data-theme="a" onClick="window.location='#two';">Previous</button></div>
-			<div class="ui-block-b"><button data-theme="a" onClick="window.location='#toc';">Contents</button></div>
-			<div class="ui-block-c"><button data-theme="a" onClick="window.location='#four';">Next</button></div>
-		</div>
-	
-	</div><!-- /content -->
-
-	<div data-role="footer" data-theme="a">
-		<h4><a href="#popup" class="ui-btn ui-shadow ui-corner-all center-button" data-rel="dialog" data-transition="pop">Disclaimer</a></h4>
-		<p class="copyright">&copy Xarkos Publishing 2015</p>
-	</div><!-- /footer -->
-	
-</div><!-- /end of chapter three -->
-
-<!-- Start of first chapter: #four -->
-<div data-role="page" id="four" data-theme="a">
-
-	<div data-role="header">
-		<h1>Family Pet First Aid</h1>
-	</div><!-- /header -->
-	
-	<div role="main" class="ui-content">
-	
-	<div class="ui-grid-b">
-		<div class="ui-block-a"><button data-theme="a" onClick="window.location='#three';">Previous</button></div>
-		<div class="ui-block-b"><button data-theme="a" onClick="window.location='#toc';">Contents</button></div>
-		<div class="ui-block-c"><button data-theme="a" onClick="window.location='#five';">Next</button></div>
-	</div>
-		
-	<h2>4) Pet 911</h2>
-	
-		<h3>Ralph's Story</h3>
-
-		<p align="center"><b><i>"Faust my eight year old Minature Schnauzer was acting out of character - he seemed disorientated and was bumping into the furniture. 
-		I suspected he'd been chewing some berries in our new garden so took a sample, made notes and got him to my emergency Veterinarian as 
-		quickly as possible. From this he was able to make a rapid and accurate diagnosis and treat Faust straight away. He pulled through and 
-		he's now OK though I've cleared up my new garden since then to remove any other possible hazards."</i></b></p>
-
-		<p align="center"><b>Lesson -  Act Fast and Act Smart!</b></p>
-
-		<h2 name="C4a">Choking</h2>
-
-		<h3>SYMPTOMS</h3>
-
-		<p><b>Laboured or rapid breathing,  animal attempts to cough up obstruction or vomit, animal is in distress, shows symptoms of anxiety,  
-		excessive pawing at the mouth, choking sounds, blue tinged lips/tongue etc.</b></p>
-
-		<p>It is important to stay calm and composed, get another person to call your veterinatian's emergency response number and follow their instructions.</p>
-
-		<p>Exercise caution and approach the animal carefully - even a loyal and trusted pet pay panic and bite or lash out indiscriminately.</p>
-
-		<p>After you have called your Veterinarian then gently and methodically examine the animals airways for signs of obstruction or to see if 
-		a foreign object is present. If you can see a foreign object and it is safe to do so then gently try to remove it with forceps or tweezers. 
-		But be careful not to push any obstruction further down your pets airways. Don't spend to much time and effort trying to remove it, it can make matters worse,
-		follow your Veterinarians advice.</p>
-
-		<p>If you cannot remove an obstruction or blockage, or your animal collapses the place both hands on either side of your pets rib cage and begin to apply firm pressure.
-		You can also lay your animal on its side and strike the rib cage with the palm of your hand three to four times. 
-		The aim in this is to create a bubble of air pressure which sharply expel air out of the lungs and hopefully 
-		the foreign object too that s causing the blockage. Repeat this at regular intervals until the object is expelled or until you reach your Veterinarians practice.</p>
-		 
-		<h2 name="C4b">Stopped Breathing</h2>
-
-		<h3>SYMPTOMS</h3>
-
-		<p><b>No natural breathing signs visible, lack of conciousness, motionless.</b></p>
-
-		<p>It is important to stay calm and composed, get another person to call your veterinatian's emergency response number and follow their instructions
-		Check to see if your animal is unconscious report this to your Veterinarian</p>
-
-		<p>Lay the animal flat with the head lowered do any fluid or other obstruction may fall out.</p>
-
-		<p>Open the animals airway by gently pulling its tongue out of its mouth until there mouth is open and the tongue  is flat and extended. 
-		Using a torch gently see if there is any object, obstruction or blockage.on the animals airways and if possible to remove it without causing trauma then attempt to do so.</p>
-
-		<p>Perform rescue breathing by closing your pets mouth and keeping it gently closed with your hand. Gently breath air into your pat's nose until you notice its chest 
-		starts to expand, let it exhale naturally. Repeat once every ten seconds or so</p>
-
-		<p>Obtain the advice of your Emergency Veterinarian and prepare to transport your pet - however be advised that if an animal has stopped breathing then even 
-		with the very best veterinary assistance available the chances of resuscitation are low.</p>
-
-		<h2 name="C4c">No Heartbeat</h2>
-
-		<h3>SYMPTOMS</h3>
-
-		<p><b>No pulse found, animal unconscious</b></p>
-
-		<p>Lay your pet gently down on its right hand side on a firm surface. Fro a cat or a dog the heart is located in the lower half of the chest on the left hand side.
-		 Place one hand underneath the animals chest for support an place the other over the heart.
-		<b>DOGS</b> - Press down gently on the animals heart. For medium sized dogs about one inch, Harder for larger dogs and less for smaller ones
-		<b>CATS</b>  - Cradle your hand around the cats chest placing your thumb on the left hand side and your fingers on the right hand side. 
-		Gently compress the chest by squeezing it between your fingers and thumb. Keep the rhythm the same as it's resting pulse rate.
-		Alternate episodes of heart massage and rescue breathing
-		Be aware that the chances of resuscitation are low but in an emergency it s their only chance.</p>
-
-		<h2 name="C4d">Seizures</h2>
-
-		<h3>SYMPTOMS</h3>
-
-		<p><b>Episodic fits and loss of motor control</b></p>
-
-		<p>Keep your pet away from any sharp or hard objects or place cushions or pillows around them to prevent injuries caused by sudden muscle spasms or movements.
-		Do not restrain you pet or prevent them from moving whilst they are having a seizure.
-		Muzzle your pet to prevent it biting itself.
-		Time the seizures (they usually last two to three minutes)  and make a careful note of all other symptoms to communicate to your Veterinarian.
-		When the seizures stop keep your animal warm, place a blanket over them.
-		Your animal may suffer loss of saliva or become incontinent during a seizure.</p>
-
-		<h2 name="C4e">Electrocution</h2>
-
-		<h3>SYMPTOMS </h3>
-
-		<p><b>Burns, shock, anxiety, burn mark may be visible.</b></p>
-
-		<p>Remove your animal from the source of shock and if safe to do so isolate or turn off the shocking hazard.
-		Check if your animal is still breathing and if so follow the advice for Stopped Breathing given above.</P>
-
-		<h2 name="C4f">Poisoning</h2>
-
-		<h3>SYMPTOMS</h3>
-
-		<p><b>Loss of conciousness, laboured or arrested breathing, lethargy, anxiety, psychological changes.</b></p>
-
-		<p>Stay calm.
-		Do not induce vomiting without consulting with your Veterinarian.
-		If your pet is vomiting <b>DO NOT</b> muzzle it.
-		Call your Veterinarian and  their advice.
-		Stabilize your pets condition and prepare it for transport to you Veterinarian's practice.</p>
-		<p>Many things which are harmless to humans can be harmful or even lethal to pets the list includes many common household cleaning agents, plants or berries, or garden chemicals and weed killers. With poisoning the primary question is one of diagnosis. You may have seen you pet ingest or come into contact with a poisoning agent or you may only suspect by observing your pets behavior that they have been poisoned. Symptoms might include lethargy, seizures and loss of consciousness. It's important to stay calm and to gather as much information as you can.
-		The following is a no means exhaustive list of agents which might be harmful to your pet</p>
-
-		<p>Human Medications</p>
-
-		<ul>
-		<li>Pain Killers particularly Paracetamol</li>
-		<li>Cold/Flu Medicines</li>
-		<li>Prescription Medications</li>
-		<li>Vitamin Pills and Dietary Supplements</li>
-		</ul>
-
-		<p>Kitchen Hazards</p>
-
-		<ul>
-		<li>Cleaning Products</li>
-		<li>Bleach and disinfectants</li>
-		<li>Fabric Softener</li>
-		<li>Moth Balls</li>
-		</ul>
-
-		<p>Garden Hazards</p>
-
-		<ul>
-		<li>Rodent Bait/Poison</li>
-		<li>Fertilizers /Plant food</li>
-		<li>Blue/Green Algae</li>
-		<li>Swimming Pool Chemicals</li>
-		<li>Slug pellets containing Metal aldehyde</li>
-		<li>Plants such as Lillies, Oleander, Yew, Foxglove, kalanchoe can cause heart problems</li>
-		<li>Azaleas, Rhododendrons, Tulip, Cyclamen, Amaryllis, Crysanthemums, Pothos, English Ivy, Philodendron, Corn-Plant, Mother-In-Laws Tongue, Hibiscus, Hydrangea, Rhubarb, Shamrockbulbs can cause intestinal problems and problems with the nervous system.</li>
-		</ul>
-
-		<h3>Primary and Secondary Poisoning</h3>
-
-		<p>As part of the evidence gathering procedure. it is important to distinguish between Primary Poisoning and Secondary Poisoning A Veterinarian will want as much information about the nature, dose and time of a toxic subject in order to make as accurate a diagnosis as possible in order to rapidly determine the correct course of action.</p>
-		<p><b>PRIMARY POISONING</b> - Occurs when the animal has directly ingested the noxious material them selves, either in there food or another means which has introduced the substance 
-		to their body.</p>
-		<p><b>SECONDARY POISINING</b> - Occurs when the animal digest an animal which itself has been poison. Particular examples might be say a cat eating a rodent which itself 
-		was killed by vermin poison or a dead bird.</p>
-		<p>In all cases it is of particular importance to record the substance, any labels or packaging, dose levels, when the animal was exposed to the poisoning agent etc. 
-		In cases of Secondary Poisoning record the animal/species ingested and if possible try to recover a sample of the body for further analysis.</p>
-		<p>A cat can poison itself by attempting to clean of any contaminant such as oil from its coat. To prevent this fasten a protective or Elizabethan collar an try and remove as 
-		much of the contaminating substance yourself. Wear surgical or rubber gloves and a fave mask, soak up as much residue as you can using paper towels 
-		and seal these in a plastic bag once used. Wash your hand before calling your emergency Veterinarian.</p>
-
-		<p>If the agent is a household chemical or cleaner check on the label for instructions on how to deal with accidental ingestion before calling your emergency Veterinarian.</p>
-
-		<h2 name="C4g">Fractures</h2>
-
-		<h3>SYMPTOMS</h3>
-
-		<p><b>Pain, discomfort and inability to walk or support weight on one limb, bend in limb shape.</b></p>
-
-		<p>Muzzle you animal
-		If your pet is bleeding try to control that without causing them to much harm or distress
-		<b>DO NOT</b> try to a a bent limb or try to set the fracture by applying strain or compression.
-		Prepare the animal for transportation to an emergency Veterinarian as supporting it as best you can on a stretcher.</p>
-
-		<h2 name="C4h">Bites</h2>
-
-		<h3>SYMPTOMS</h3>
-
-		<p><b>Visible bit marks or bleeding</b></p>
-
-		<p>Sadly it's a fact that animals will attack other animals either out of territoriality or a desire to protect their owner. 
-		An animal which has been bitten by another animal will be agitated and I pain. They will have high levels of adrenalin and lactic acid coursing around there body - 
-		their fight or flight reflex will have been triggered and will still be active there hearts will be pounding they may be gulping for breath. </p>
-
-		<p>Remember as I mentioned before that in this condition even the most faithful, trusted and placid animal may turn and bite anyone they perceive as a threat or a danger. 
-		Follow the advice give earlier approach a wounded animal slowly and cautiously making sure your arms and hands are covered, 
-		keep your face away from their mouth at all times, making only occasional eye contact.
-		Muzzle the animal, if you have an Elizabethan collar apply it now.
-		Gently and cautiously examine the bite wound for contamination or debris, if a significant amount is present then flush the wound with copious amounts of clean, warm water.
-		Apply gauze to the wound, wrap around a bandage and secure with surgical tape.
-		If the wound is bleeding profusely apply pressure - <b>DO NOT</b> use a tourniquet.
-		Stabilize, comfort and re-assure your animal.
-		Call you Veterinarian and prepare for transport to their practice</p>
-
-		<h2 name="C4i">Bleeding</h2>
-
-		<h3>SYMPTOMS</h3> 
-
-		<p><b>Open wound or matted coat, signs of blood loss.</b></p>
-
-		<p>Apply firm, direct pressure over the bleeding area until the bleeding stops or is under control. Hold the pressure steadily and firmly for 
-		at least ten minutes, do not stop every few minutes or so to examine the blood flow as this may prevent the natural clotting reaction.
-		Muzzle your animal.
-		Apply a dressing and bandage your animal making sure that this is not so tights as to obstruct natural blood flow.
-		Place a protective or Elizabethan collar on your pet
-		Transport to your emergency Veterinarian.</p>
-
-		<h2 name="C4j">Burns</h2>
-
-		<h3>SYMPTOMS</h3>
-
-		<p><b>Pain or sensitivity in one area, burn may or may not be visible.</b></p>
-
-		<h3>CHEMICAL BURNS</h3>
-
-		<p>Apply an Elizabethan Collar or puzzle to prevent your pets natural instinct to lick the area clean.
-		Flush with copious amounts of cool clean water.
-		Consult your emergency Veterinarian</p>
-
-		<h3>OTHER BURNS</h3>
-
-		<p>Apply an Elizabethan Collar or puzzle to prevent your pets natural instinct to lick the area clean.
-		Flush with copious amounts of cool clean water.
-		Apply an ice cube compress to the affected area
-		Consult your emergency Veterinarian</p>
-
-		<h2 name="C4k">Diarrhea</h2>
-
-		<h3>SYMPTOMS</h3>
-
-		<p><b>Runny discharge from rear of animal.</b></p>
-
-		<p>The main problem with diarrhea is that it causes dehydration. Have a supply of clean fresh water available for your animal.. 
-		If diarrhea persists after 24 hours consult your Veterinarian.</p>
-
-		<h2 name="C4l">Heatstroke</h2>
-
-		<h3>SYMPTOMS</h3>
-
-		<p><b>Rapid or laboured breathing, agitation, exhaustion.</b></p>
-		<p>Place your animal in a bath of cool water or drench then with a cool shower or alternatively wrap then in a wet towel or blanket.
-		Do not over cool the animal until it begins to shiver and chill.
-		Check their internal temperature rectally - it should be around 103 F.
-		Call your emergency Veterinarian</p>
-
-		<h2 name="C4m">Shock</h2>
-
-		<h3>SYMPTOMS</h3>
-
-		<p><b>Irregular breathing, mood changes or unusual behaviour, hyperactivity, dilated pupils, rapid breathing.</b></p>
-
-		<p>Keep your restrained in a warm and quiet environment with the lower body elevated.
-		 Call your emergency Veterinarian</p>
-
-		<h2 name="C4n">Vomiting</h2>
-
-		<h3>SYMPTOMS</h3>
-
-		<p><b>Discharge from mouth.</b></p>
-
-		<p>Vomiting is a natural, though messy, response of the animals body to rid itself of poisonous matter, normally it should be left to run its course 
-		unless it is accompanied by any other more long term symptoms such as weakness, loss of conciousness, seizures etc. in which case consult your emergency Veterinarian at once.
-		Vomiting will cause dehydration so have some chilled clean water available for your pet to drink.
-		After a few hours gradually provide a small amount of bland food for your pet, if they can tolerate this they should recover within twenty four hours . 
-		If vomiting persist after this time consult your Veterinarian</p>
-	
-		<div class="ui-grid-b">
-			<div class="ui-block-a"><button data-theme="a" onClick="window.location='#three';">Previous</button></div>
-			<div class="ui-block-b"><button data-theme="a" onClick="window.location='#toc';">Contents</button></div>
-			<div class="ui-block-c"><button data-theme="a" onClick="window.location='#five';">Next</button></div>
-		</div>
-	
-	</div><!-- /content -->
-
-	<div data-role="footer" data-theme="a">
-		<h4><a href="#popup" class="ui-btn ui-shadow ui-corner-all center-button" data-rel="dialog" data-transition="pop">Disclaimer</a></h4>
-		<p class="copyright">&copy Xarkos Publishing 2015</p>
-	</div><!-- /footer -->
-	
-</div><!-- /end of chapter four -->
-
-<!-- Start of first chapter: #five -->
-<div data-role="page" id="five" data-theme="a">
-
-	<div data-role="header">
-		<h1>Family Pet First Aid</h1>
-	</div><!-- /header -->
-	
-	<div role="main" class="ui-content">
-	
-	<div class="ui-grid-b">
-		<div class="ui-block-a"><button data-theme="a" onClick="window.location='#four';">Previous</button></div>
-		<div class="ui-block-b"><button data-theme="a" onClick="window.location='#toc';">Contents</button></div>
-		<div class="ui-block-c"><button data-theme="a" onClick="window.location='#six';">Next</button></div>
-	</div>
-
-	<h2>5) Species Specific Information</h2>
-	
-		<h3>The Cat</h3>
-
-		<p>The domestic cat is a small delightful domestic animal a member of the felid family, they are valued because of their 
-		close association with humans and also their ability to catch rodents and control other small rodents. 
-		Cats have an innate hunting instinct and will still hunt and kill small rodents, birds and even rabbits even 
-		when they are well fed and cared for. Cats are carnivorous animals and cannot live on a purely vegetarian diet, 
-		some element of meat must be present in their diet to maintain health. Cats have a strong instinct for self 
-		preservation and are often allowed to roam free outside of the home, they are agile climbers strong flexible bodies, 
-		quick reflexes, sharp retractable claw and teeth and a natural sense of balance - the ability of a cat to turn in mid
-		air and always land on it's feet is legendary.</p>
-
-		<p>Cats are prone to viral infections against which your cat should be vaccinated as a precautionary measure.</p>
-
-		<p>The main dangers to he domestic cat are</p>
-
-		<ul>
-		<li>Road Hazards</li>
-		<li>Fights with other cats or dogs</li>
-		<li>Falls or trad</li>
-		<li>Poisoning</li>
-		</ul>
-
-		<p>The cats liver has evolved to be less effective at some forms of detoxification than other animals and 
-		consequently poison is an ever present risk for the domestic cat. In fact many everyday substances found 
-		about the home whilst safe for humans can be lethal to your cat.  The following list is by no means and 
-		exhaustive one and outlines some on the many and real dangers to your cat.</p?
-
-		<p>Antifreeze or ethylene glycol - If you have a leaking radiator in your car then it is possible that a 
-		pool of water may develop on the floor under the engine. A thirsty cat may lap this up and be poisoned by the antifreeze in it.</p>
-
-		<h2>The Dog</h2>
-
-		<p>Dogs come in a great variety of sizes and breeds each with their own diverse care requirements. Dogs are generally hardy creatures but certain breed characteristics may have their own health implications.
-		Dogs love the taste of chocolate or other sweet things however chocolate contains a compound called theobromine which is a chemical stimulant (such as  and theophylline) belonging to the group of methylxanthine alkaloids which dogs are unable to metabolize effectively.  Theobromine from chocolate can stay in their bloodstream for days and may accumulate. Symptoms such as anxiety, rapid heart beat, hallucinations, diarrhea, seizures, heart attack and internal bleeding can occur which may be fatal. Milk chocolate contains fairly low doses of theobromine but dark chocolate or cooking chocolate can contain theobromine at a level which can be harmful or even fatal. you must give your dog chocolate obtain a specially m dog treat from your pet shop.
-		The following may be harmful to dogs, they are to be avoided</p>
-
-		<ul>
-		<li>Grapes and Raisins</li>
-		<li>Dark Chocolate</li>
-		<li>Onions</li>
-		<li>Alcohol</li>
-		<li>Macadamia Nuts</li>
-		<li>Hops (used in brewing)</li>
-		<li>Xylitol - A sweetener used in chewing gum etc.</li>
-		</ul>
-
-		<div class="ui-grid-b">
-			<div class="ui-block-a"><button data-theme="a" onClick="window.location='#four';">Previous</button></div>
-			<div class="ui-block-b"><button data-theme="a" onClick="window.location='#toc';">Contents</button></div>
-			<div class="ui-block-c"><button data-theme="a" onClick="window.location='#six';">Next</button></div>
-		</div>
-	
-	</div><!-- /content -->
-
-	<div data-role="footer" data-theme="a">
-		<h4><a href="#popup" class="ui-btn ui-shadow ui-corner-all center-button" data-rel="dialog" data-transition="pop">Disclaimer</a></h4>
-		<p class="copyright">&copy Xarkos Publishing 2015</p>
-	</div><!-- /footer -->
-	
-</div><!-- /end of chapter five -->
-
-<!-- Start of first chapter: #six -->
-<div data-role="page" id="six" data-theme="a">
-
-	<div data-role="header">
-		<h1>Family Pet First Aid</h1>
-	</div><!-- /header -->
-	
-	<div role="main" class="ui-content">
-	
-	<div class="ui-grid-b">
-		<div class="ui-block-a"><button data-theme="a" onClick="window.location='#five';">Previous</button></div>
-		<div class="ui-block-b"><button data-theme="a" onClick="window.location='#toc';">Contents</button></div>
-		<div class="ui-block-c"><button data-theme="a" onClick="window.location='#seven';">Next</button></div>
-	</div>
-		
-	<h2>6) A Pet First Aid Kit</h2>
-	
-		<p>One thing you can keep to hand in case of an emergency is a set of medical supplies or a First Aid Kit for your pet. 
-		Keep these in a clearly labelled box and make sure it is fully stocked at all times and you know where to get your hands on it quickly should the worst happen.</p>
-
-		<p>So what kind of things do we need to put in a Pet Fist Aid Kit? Well you can either buy a Pet First Aid kit fully stocked from either eBay, 
-		Amazon or your local Pet Shop or you can stock a Pet First Aid Kit yourself. Some of the items are easily available and the human equivalent of items 
-		such as sterile bandages or gauze will do fine for your animal. Other items are more specialist - for example a Protective or Elizabethan Pet Collar - 
-		and will require some research to find a supplier - as always the internet will most often be the place to start.</p>
-
-		<p>The following is not an exhaustive list...</p>
-
-		<p><b>Gauze</b> - For wrapping wounds or  for muzzling an injured animal.</p>
-		<p><b>Bandages</b> - non stick towels or other strips of clean cloth to protect wounds or to control bleeding.</p>
-		<p><b>Tweezers</b> - To remove thorns, glass, splinters.</p>
-		<p><b>Adhesive tape</b> - For securing bandages or gauze wrap.</p>
-		<p><b>NOTE</b>:- Do not use human adhesive plasters or bandages (i.e. Band Aids) on your animal.</p>
-		<p><b>Milk of Magnesia</b></p>
-		<p><b>Activated Charcoal</b> - To absorb poison <b>NOTE</b>:- Always consult your veterinarian or local poison control centre <b>BEFORE</b> inducing vomiting or treating an animal for poisoning.</p>
-		<p><b>Hydrogen peroxide (3%)</b> - To induce vomiting <b>NOTE</b>:- Always consult your veterinarian or local poison control centre <b>BEFORE</b> inducing vomiting or treating an animal for poisoning.</p>
-		<p><b>Digital Thermometer</b> - Obtain a "fever" thermometer because the temperature scale of human thermometers doesn't go high enough for pets.	
-		To check your pet's temperature. You must take your pet's temperature rectally <b>DO NOT</b> insert a thermometer into your pets mouth.</p>
-		<p><b>Eye dropper</b> - (or large syringe without needle)	To give oral treatments or flush wounds.</p>
-		<p><b>Sterile Water</b> - For re-hydrating your pet. For Flushing wounds. For Emergency Cooling. </p>
-		<p><b>Muzzle</b> - (in an emergency a rope, necktie, soft cloth, nylon stocking, small towel may be used) To cover your pets head.
-		<b>NOTE</b>:- <b>DO NOT</b> muzzle your pet if it is vomiting.</p>
-		<p><b>Leash</b>	- To transport your pet (if your pet is capable of walking without further injury).</p>
-		<p><b>Protective or "Elizabethan" Collar</b> - (see cover illustration) To prevent you pet licking or biting on any wounds or dressings you have applied.</p>
-
-		<p>You will also need a pet transporter cage if your pet is small enough to fit in one.</p>
-				
-		<div class="ui-grid-b">
-			<div class="ui-block-a"><button data-theme="a" onClick="window.location='#five';">Previous</button></div>
-			<div class="ui-block-b"><button data-theme="a" onClick="window.location='#toc';">Contents</button></div>
-			<div class="ui-block-c"><button data-theme="a" onClick="window.location='#seven';">Next</button></div>
-		</div>
-	
-	</div><!-- /content -->
-
-	<div data-role="footer" data-theme="a">
-		<h4><a href="#popup" class="ui-btn ui-shadow ui-corner-all center-button" data-rel="dialog" data-transition="pop">Disclaimer</a></h4>
-		<p class="copyright">&copy Xarkos Publishing 2015</p>
-	</div><!-- /footer -->
-	
-</div><!-- /end of chapter six -->
-
-<!-- Start of first chapter: #seven -->
-<div data-role="page" id="seven" data-theme="a">
-
-	<div data-role="header">
-		<h1>Family Pet First Aid</h1>
-	</div><!-- /header -->
-	
-	<div role="main" class="ui-content">
-	
-	<div class="ui-grid-b">
-		<div class="ui-block-a"><button data-theme="a" onClick="window.location='#six';">Previous</button></div>
-		<div class="ui-block-b"><button data-theme="a" onClick="window.location='#toc';">Contents</button></div>
-		<div class="ui-block-c"><button data-theme="a" onClick="window.location='#eight';">Next</button></div>
-	</div>
-		
-	<h2>7) Your Pet's Medical Record</h2>
-	
-		<p>It's a good idea to keep an independent records of basic data about your pet an details of any long-standing conditions, accidents,  
-		allergies, treatments and medications etc. that have been given. This information can be split into two parts - basic data and medical information. 
-		We would recommend the use of a list like that below to record in order to organize this data.</p>
-
-		<h3>PET MEDICAL INFORMATION RECORD Basic Data</h3>
-
-		<ul>	
-		<li>Name</li>	
-		<li>Species</li>	
-		<li>Breed</li>
-		<li>Registry details (If registered with a Professional recognized breeders association. i.e. Kennel Club etc.)</li>
-		<li>Gender</li>	
-		<li>Date of Birth / Age</li>	
-		<li>Weight</li>
-		</ul>
-			
-		<b>TIP</b>
-
-		<p>In order to weigh your pet do the following...</p>
-
-		<ol>
-		<li>Whilst holding your pet firmly step on a set of bathroom scales and record the reading</li>
-		<li>Now set you pet down and record your own weight</li>
-		<li>Subtract the second reading from the first and that is your pets weight</li>
-		</ol>
-
-		<p><b>Height</b> Quite hard to judge at least indicate if they are average for that specific breed.</p>
-		<p><b>Resting Pulse Rate</b> Examine your pat to discover places or points where a pulse can be found. It may be tricky 
-		to count as the resting pulse rate of a cat or a dog can be higher than a human.</p>
-		<p><b>Normal Temperature</b> Taken rectally - ALWAYS Use the correct thermometer.</p>
-		<p><b>Markings/Description</b></p> 	
-
-		<p><b>Coat colour</b></p>
-		<p><b>Coat length</b></p> 
-		<p><b>If trimmed - describe trimming details</b></p>
-		<p><b>Markings description - spots or stripes. Size and colour</b></p>
-		<p><b>Tail Description - present/missing/colour length</b></p>
-		<p><b>Scars/ Scratches/ Injuries</b></p>
-		<p><b>Facial/Ear Description</b></p>
-		<p><b>Eye Colour/Condition</b></p>
-
-		<p><b>Temperament</b> Trained? responds to which commands?</p>
-		<p><b>Domesticated</b> COuld the animal be considered dangerous/Will it bite?</p>
-		<p><b>Sociability</b> - Nervous, shy, sociable</p>
-		<p><b>Use to collars/muzzle/caged/transported?</b></p>
-		<p><b>Photograph</b> Have several photographs of your pet taken against a plain background. This will be invaluable for identification purposes at a later date.</p>
-		<p><b>Nose Print</b> Within the canine world a nose-print can be almost as accurate a form of identification as a fingerprint in the human domain. 
-		Though not absolutely essential it is worth considering (if you dog will allow it) making a nose print for future reference.</p>
-		<p><b>Dietary Needs</b>	Any special dietary needs/ preferences or intolerance's</p>
-		<p><b>Chipped</b> ID No. When Chipped - Where Chipped</p>
-		<p><b>Answers To</b> Responds to what name? </p>
-
-		<h3>PET MEDICAL INFORMATION RECORD Current Veterinarian</h3>		
-		<p><b>Name of Practice</b></p>	
-		<p><b>Emergency Response Telephone Number (Have this number programmed into your cell phone)</b></p>		
-		<p><b>Telephone Number (office)	</b></p>	
-		<p><b>Fax/Email</b></p>		
-		<p><b>Address (include GPS Co-ordinates for Sat Nav)</b></p>		
-		<p><b>Previous Veterinary Practices</b></p>		
-
-		<h3>PET MEDICAL INFORMATION RECORD Medical Insurance</h3>		
-		<p><b>Name of Insurance Company</b></p>		
-		<p><b>Address and Contact details for Insurance Company</b></p>		
-		<p><b>Policy Number</b></p>		
-		<p><b>Policy Expiry/Renewal date</b></p>		
-
-		<h3>PET MEDICAL INFORMATION RECORD Medication Records</h3>		
-		<p><b>Medication</b></p>		
-		<p><b>Dosage/Frequency</b></p>		
-		<p><b>Reason Prescribed</b></p>		
-		<p><b>Prescribed By	DATE From DATE to</b></p>		
-
-		<p>Note :-  You will need multiple entries of the above dataset - as many as is required</p>
-
-		<h3>PET MEDICAL INFORMATION RECORD Medical Incident Record</h3>		
-		<p><b>Date</b></p>		
-		<p><b>Incident Description</b></p>		
-		<p><b>Handling Veterinarian</b></p>		
-		<p><b>Notes</b></p>	
-
-		<p>Note :-  You will need multiple entries of the above dataset - as many as is required</p>
-		
-	
-		<div class="ui-grid-b">
-			<div class="ui-block-a"><button data-theme="a" onClick="window.location='#six';">Previous</button></div>
-			<div class="ui-block-b"><button data-theme="a" onClick="window.location='#toc';">Contents</button></div>
-			<div class="ui-block-c"><button data-theme="a" onClick="window.location='#eight';">Next</button></div>
-		</div>
-	
-	</div><!-- /content -->
-
-	<div data-role="footer" data-theme="a">
-		<h4><a href="#popup" class="ui-btn ui-shadow ui-corner-all center-button" data-rel="dialog" data-transition="pop">Disclaimer</a></h4>
-		<p class="copyright">&copy Xarkos Publishing 2015</p>
-	</div><!-- /footer -->
-	
-</div><!-- /end of chapter seven -->
-
-<!-- Start of first chapter: #eight -->
-<div data-role="page" id="eight" data-theme="a">
-
-	<div data-role="header">
-		<h1>Family Pet First Aid</h1>
-	</div><!-- /header -->
-	
-	<div role="main" class="ui-content">
-	
-	<div class="ui-grid-b">
-		<div class="ui-block-a"><button data-theme="a" onClick="window.location='#seven';">Previous</button></div>
-		<div class="ui-block-b"><button data-theme="a" onClick="window.location='#toc';">Contents</button></div>
-		<div class="ui-block-c"><button data-theme="a" onClick="window.location='#toc';">Next</button></div>
-	</div>
-
-	<h2>Afterword</h2>
-	
-		<p>With alertness and armed with the information in this guide you could save your pets life, or at least arrange matters so
-	 that if the worst comes to the worst your first response your pet stands a good chance of  survival. 
-	 You owe it to them to do this, and I'm sure if they could they would thank you back.</p>
-
-		<div class="ui-grid-b">
-			<div class="ui-block-a"><button data-theme="a" onClick="window.location='#seven';">Previous</button></div>
-			<div class="ui-block-b"><button data-theme="a" onClick="window.location='#toc';">Contents</button></div>
-			<div class="ui-block-c"><button data-theme="a" onClick="window.location='#toc';">Next</button></div>
-		</div>
-	
-	</div><!-- /content -->
-
-	<div data-role="footer" data-theme="a">
-		<h4><a href="#popup" class="ui-btn ui-shadow ui-corner-all center-button" data-rel="dialog" data-transition="pop">Disclaimer</a></h4>
-		<p class="copyright">&copy Xarkos Publishing 2015</p>
-	</div><!-- /footer -->
-	
-</div><!-- /end of chapter eight -->
-
-<!-- Start of third page: #popup -->
-<div data-role="page" id="popup">
-
-	<div data-role="header" data-theme="b">
-		<h1>Disclaimer</h1>
-	</div><!-- /header -->
-
-	<div role="main" class="ui-content">
-		<p>The information in this guide is provided on an "as is" basis and no responsibility can be accepted for any errors or omissions or for any consequences arising from using the information or advice in this guide.</p>
-	</div><!-- /content -->
-
-	<div data-role="footer">
-		<p>&copy Xarkos Publishing 2015</p>
-	</div><!-- /footer -->
-</div><!-- /page popup -->
 
 </body>
-
 </html>
