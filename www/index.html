@@ -1,225 +1,258 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+
+ <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+ 
+ <script src="http://code.jquery.com/jquery-1.11.3.js"></script>
+ <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+ <script src="http://code.highcharts.com/highcharts.js"></script>
 
 <script>
 
-//Global variables			
-var holes = 10;
-var field = '#hole';
+$(function() {
 
-$(document).ready(function(){
+    $("#tabs").tabs();
+	$("#tabs").addClass('override');
 
-	//Check if local storage is enabled on this browser and display relevant div
-	if (Modernizr.localstorage) { 
-			//Show main div - the one with the scorecard on it
-			$('#storage').show();
-			//Add event handlers to buttons
-			$("#update").click(function(event) {
-				event.preventDefault();
-				updateScorecard();
-			});
-			$("#reset").click(function(event) {
-				event.preventDefault();
-				resetScorecard();
-			});
-			//Check to see if data exists
-			if (localStorage.getItem("XarkosCrazyGolfScorecard") === null) {
-				$('#status').html('New Game');
-				$('#reset').hide();
-			} else {
-				$('#status').html('Game In Play');
-				refreshScoreCard();
-			}
-			
-      } else { 
-			console.log("Local Storage is not available."); 
-			$('#message').show();
-      } 
+	$("#tabs a.refresh").click(function(event) {
+		updateChart();
+	});
+	
+	$("#update").click(function(event) {
+		event.preventDefault();
+		updateBloodPressure();
+	});
+	
+	$("#cleardata").click(function(event) {
+		event.preventDefault();
+		clearChart();
+	});
+	
+	updateChart();
 	
 });
 
-function updateScorecard() {
-		
-		//Get data from card and convert to JSON
-			var score = 0;
-			
-			var memorystring = "{";
-			for (i = 0; i < holes; i++) {
-				fieldtoget = field + (i + 1);
-				score=parseInt(score) + parseInt($(fieldtoget).val());
-				memorystring = memorystring + '"' + fieldtoget.slice(1) + '":' + parseInt($(fieldtoget).val()) + ', ';
-			}
-			//Format end of JSON string
-			memorystring = memorystring.slice(0, memorystring.length-2) + "}";
-			//memorystring = JSON.stringify(memorystring);
-			//If not there insert - else - Update - luckily it updates automatically! -whoopee...
-			localStorage.setItem("XarkosCrazyGolfScorecard", memorystring);
-			//Update score on bottom of the card
-			$('#total').html(score);
-			//Show reset button
-			$('#reset').show();
-			//Rest status banner
-			$('#status').html('Game In Play');
-			
-			
+function updateBloodPressure() {
+
+	var systolic = $('#systolic').val();
+	var diastolic = $('#diastolic').val();
+
+	//put validation in here...
+
+	var bloodpressuredata = JSON.parse(localStorage.getItem("XarkosBloodPressureReadings"));
+	if (bloodpressuredata == null){
+		var bloodpressuredata={"bloodpressurereadings":[]};
+	}
+
+	//Push latest item onto local storage string (JSON)
+	bloodpressuredata.bloodpressurereadings.push(
+		{
+		systolic: systolic, 
+		diastolic: diastolic, 
+		}
+	);
+
+	//Update local storage 
+	localStorage.setItem("XarkosBloodPressureReadings", JSON.stringify(bloodpressuredata));
+
+	//clear fields and show chart tab
+	$('#systolic').val(null);
+	$('#diastolic').val(null);	
+	$("#tabs a.refresh").click();
+
 }
 
-function refreshScoreCard () {
+function updateChart() {
 
-			var score = 0;
-			console.log('refreshing scorecard');
-			var retreiveddata = JSON.parse(localStorage.getItem("XarkosCrazyGolfScorecard"));
-			for (var key in retreiveddata) {
-				if (retreiveddata.hasOwnProperty(key)) {
-					$('#' + key).val(retreiveddata[key]);
-					score = score + parseInt(retreiveddata[key]);
-				}
-			}
-			//Update score on bottom of the card
-			$('#total').html(score);
-			
+var retreiveddata = JSON.parse(localStorage.getItem("XarkosBloodPressureReadings"));
+	
+var systolicdata = [];
+var diastolicdata = [];	
+	
+for (var i in retreiveddata.bloodpressurereadings) {
+	systolicdata.push(parseInt(retreiveddata.bloodpressurereadings[i].systolic));
+	diastolicdata.push(parseInt(retreiveddata.bloodpressurereadings[i].diastolic));
 }
 
-function resetScorecard() {
+var systolicdataobject  = {name: 'Systolic = ', data: systolicdata};
+var diastolicdataobject = {name: 'Diastolic = ', data: diastolicdata }
 
-			var r = confirm("RESET SCORECARD \n\nDo you wish to reset the scorecard? \n\n\If you selecy [ OK ] your game record will be deleted!");
-			if (r == true) {
-				localStorage.removeItem("XarkosCrazyGolfScorecard");
-				//Reset value in each field to 0
-				for (i = 0; i < holes; i++) {
-					$(field + (i+1)).val(0);
-				}
-				//Update score on bottom of the card
-				$('#total').html(0);
-				//Hide reset button
-				$('#reset').hide();
-				//Rest status banner
-				$('#status').html('New Game');
-			}	
+var chartdata  = [systolicdataobject, diastolicdataobject];
+
+ $('#chart').highcharts({
+        chart: {
+            type: 'line'
+        },
+		series: chartdata,
+        title: {
+            text: 'Blood Pressure Tracker'
+        },
+		 subtitle: {
+            text: 'mm Hg'
+        },
+		xAxis: {
+            title: {
+                text: 'Reading No.'
+            },
+            tickInterval: 1
+        },
+        yAxis: {
+            title: {
+                text: 'Blood Presssure Monitor Reading'
+            }
+        },
+		tooltip : {
+			backgroundColor: '#FCFFC5',
+			borderColor: 'black',
+			borderRadius: 10,
+			borderWidth: 3
+		},
+		 plotOptions: {
+            line: {
+                dataLabels: {
+                    enabled: true
+                },
+                enableMouseTracking: false
+            }
+        }
+    });
+
 }
+
+function clearChart() {
+
+	var r = confirm("DELETE ALL BLOOD PRESSURE READINGS? \n\nDo you wish to reset the chart? \n\n\If you select [ OK ] all items will be deleted!");
+		if (r == true) {
+			localStorage.removeItem("XarkosBloodPressureReadings");	
+			location.reload();
+		}	
+	
+}
+
 
 </script>
 
 <style>
+
 	body {
 	margin:0px;
 	font-family: Arial;
 	}
-	#message, #storage {
-	display:none;
-	}
 	h2, h3 {
 	text-align:center;
 	}
-	table {
-	width:33%;
-	border-collapse:collapse;
+	.override {
+	width:800px;
 	margin-left:auto;
 	margin-right:auto;
 	}
-	input {
-	width:100%;
+	.inputtable {
+	margin-top:30px;
+	margin-left:auto;
+	margin-right:auto;
 	}
-	input.number {
-	width:35px;
-	text-align:center;
+	.inputtablelable {
+	width:50%;
+	text-align:right;
+	padding-right:10px;
+	{
+	.inputtableinput {
+	width:50%;
+	text-align:left;
 	}
-	th, .score {
-	font-size:14pt;
-	font-weight:bold;
-	text-align:center;
-	background-color:lightgreen;
+	input[type=number] { 
+	background-color:blue;
+	width:30px;
 	}
-	tr {
-	text-align:center;
-	}
-	td {
-	width:33%;
-	}
-
+	
 	
 </style>
+
+
 </head>
 <body>
-<div id="message"><h2>Sorry (according to Modernizr) Local Storage is not supported by this browser.</h2></div>
-<h2>Scorecard</h2>
-<h3><div id="status"></div></h3>
-<div id="storage">
 
-<table border="1">
-	<tr>
-		<th>HOLE</th>
-		<th>SCORE</th>
-	</tr>
-	
-	<tr>
-		<td>1</td>
-		<td><input id="hole1" class="number" type="number" value=0 min=0></td>
-	</tr>
-	
-	<tr>
-		<td>2</td>
-		<td><input id="hole2" class="number" type="number" value=0 min=0></td>
-	</tr>
-	
-	<tr>
-		<td>3</td>
-		<td><input id="hole3" class="number" type="number" value=0 min=0></td>
-	</tr>
-	
-	<tr>
-		<td>4</td>
-		<td><input id="hole4" class="number" type="number" value=0 min=0></td>
-	</tr>
-	
-	<tr>
-		<td>5</td>
-		<td><input id="hole5" class="number" type="number" value=0 min=0></td>
-	</tr>
-	
-	<tr>
-		<td>6</td>
-		<td><input id="hole6" class="number" type="number" value=0 min=0></td>
-	</tr>
-	
-	<tr>
-		<td>7</td>
-		<td><input id="hole7" class="number" type="number" value=0 min=0></td>
-	</tr>
-	
-	<tr>
-		<td>8</td>
-		<td><input id="hole8" class="number" type="number" value=0 min=0></td>
-	</tr>
-	
-	<tr>
-		<td>9</td>
-		<td><input id="hole9" class="number" type="number" value=0 min=0></td>
-	</tr>
-	
-	<tr>
-		<td>10</td>
-		<td><input id="hole10" class="number" type="number" value=0 min=0></td>
-	</tr>
-	
-	<tr class="score">
-		<td>TOTAL</td>
-		<td><div id="total">0</div></td>
-	</tr>
-	
-	<tr>
-		<td><button id="reset">Clear Card</button></td>
-		<td><button id="update">Update</button></td>
-	</tr>
-	
+<h2>SPA using jQuery, Local Storage - JSON & Hicharts</h2>
 
-</table>	
-
-<div id="objectdata"></div>
-
+<div id="tabs" class="overrride">
+	<ul>
+		<li><a href="#tabs-1">Home</a></li>
+		<li><a href="#tabs-2">Data Entry</a></li>
+		<li><a href="#tabs-3" class="refresh">Data Chart</a></li>
+		<li><a href="#tabs-4">Configuration</a></li>
+		<li><a href="#tabs-5">Help</a></li>
+	</ul>
+	  
+	<div id="tabs-1" style="background-color:lightyellow;">
+		<h1>Blood Pressure Tracker</h1>
+		<h4>A simple SPA by Xarkos consulting</h4>
+	</div>
+	  
+	<div id="tabs-2">
+		<h3>Please enter blood pressure readings from Sphygmomanometer</h3>
+		<table border="0" class="inputtable">
+			<tr>
+				<td class="inputtablelable">Systolic:</td>
+				<td class="inputtableinput"><input type="number" min=50 id="systolic" style="width:60px;" required></td>
+				<td rowspan="2"><button id="update">Update</button></td>
+			</tr>
+			<tr>
+				<td class="inputtablelable">Diastolic:</td>
+				<td class="inputtableinput"><input type="number" min=50 id="diastolic" style="width:60px;" required></td>
+			</tr>
+		</table>
+		
+	</div>
+	  
+	<div id="tabs-3">
+		<div id="chart"></div>
+	</div>
+			
+	<div id="tabs-4">
+		<h3>Please enter your personal details here...</h3>
+		<table border="0" class="inputtable">
+			<tr>
+				<td class="inputtablelable">Name</td>
+				<td class="inputtableinput"><input type="text"  id="name" style="width:260px;" ></td>
+			</tr>
+			<tr>
+				<td class="inputtablelable">Age:</td>
+				<td class="inputtableinput"><input type="number" id="age" style="width:60px;" ></td>
+			</tr>
+			<tr>
+				<td class="inputtablelable">Height:</td>
+				<td class="inputtableinput"><input type="number" id="height" style="width:60px;" ></td>
+			</tr>
+			<tr>
+				<td class="inputtablelable">Weight:</td>
+				<td class="inputtableinput"><input type="number" id="weight" style="width:60px;" ></td>
+			</tr>
+			<tr>
+				<td class="inputtablelable" colspan="2"><button id="cleardata">Clear Data</button></td>
+			</tr>
+		</table>
+	</div>
+	  
+	<div id="tabs-5">
+		<h3>Help</h3>
+		<p>This is a simple SPA (Single Page Application) to demonstrate the following technologies...</p>
+		<ul>
+			<li>jQueryUI</li>
+			<li>Local Storage</li>
+			<li>JSON</li>
+			<li>Hicharts</li>
+		</ul>
+		<p>Data entered on tab 2 "Data Entry" is saved to the browser's local storage as a JSON String 
+		(it can be viewed in 
+		Chrome Web Tool under the <b>Resources > Local Storage > XarkosBloodPressureReadings</b>. </p>
+		<p>When tab 3 "Data Chart" is clicked the embedded <a href="http://www.highcharts.com" target="_blank">Highcharts</a>
+		is redrawn with the stored data.</p>
+		<p>Most of tab 4 "Configuration is just for show. The Clear Data button however will remove the	
+		saved data from the browser and reset the chart.</p>
+		
+	</div>
+	 
 </div>
 
 
